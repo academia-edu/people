@@ -2,6 +2,11 @@
 
 require 'test_helper'
 
+# These specs are still pretty far from complete,
+# both with respect to different types of names,
+# and with respect to testing correct recognition of
+# titles, etc. (We currently only check we got the
+# surname, first initial, and maybe given name correct.)
 describe People::NameParser do
 
   shared_examples "a parseable name" do |name, surname, first_initial, given_name|
