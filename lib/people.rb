@@ -8,7 +8,7 @@ module People
     # Creates a name parsing object
     def initialize( opts={} )
 
-      @name_chars = "A-Za-z0-9\\-\\'"
+      @name_chars = "[:alpha:]0-9\\-\\'"
       @nc = @name_chars
 
       @opts = {
@@ -291,10 +291,9 @@ module People
     def clean( s )
 
       # remove illegal characters
-      s.gsub!( /[^A-Za-z0-9\-\'\.&\/ \,]/, "" )
+      s.gsub!( /[^[:alpha:]0-9\-\'\.&\/ \,]/, "" )
       # remove repeating spaces
-      s.gsub!( /  +/, " " )
-      s.gsub!( /\s+/, " " )
+      s.gsub!( /[[:space:]]+/, " " )
       s.strip!
       s
 
@@ -348,70 +347,78 @@ module People
       parsed = false
 
       # M ERICSON
-      if name.match( /^([A-Za-z])\.? (#{last_name_p})$/i )
+      if name.match( /^([[:alpha:]])\.? (#{last_name_p})$/i )
         first  = $1;
         middle = '';
         last   = $2;
         parsed = true
         parse_type = 1;
 
-        # M E ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
+      # M E ERICSON
+      elsif name.match( /^([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i )
         first  = $1;
         middle = $2;
         last   = $3;
         parsed = true
         parse_type = 2;
 
-        # M.E. ERICSON
-      elsif name.match( /^([A-Za-z])\.([A-Za-z])\. (#{last_name_p})$/i )
+      # M.E. ERICSON
+      elsif name.match( /^([[:alpha:]])\.([[:alpha:]])\. (#{last_name_p})$/i )
         first  = $1;
         middle = $2;
         last   = $3;
         parsed = true
         parse_type = 3;
 
-        # M E E ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
+      # M E E ERICSON
+      elsif name.match( /^([[:alpha:]])\.? ([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i )
         first  = $1;
         middle = $2 + ' ' + $3;
         last   = $4;
         parsed = true
         parse_type = 4;
 
-        # M EDWARD ERICSON
-      elsif name.match( /^([A-Za-z])\.? ([#{@nc}]+) (#{last_name_p})$/i )
+      # M.E.E. ERICSON
+      elsif name.match( /^([[:alpha:]])\.([[:alpha:]])\.([[:alpha:]])\. (#{last_name_p})$/i )
+        first  = $1;
+        middle = $2 + ' ' + $3;
+        last   = $4;
+        parsed = true
+        parse_type = 4;
+
+      # M EDWARD ERICSON
+      elsif name.match( /^([[:alpha:]])\.? ([#{@nc}]+) (#{last_name_p})$/i )
         first  = $1;
         middle = $2;
         last   = $3;
         parsed = true
         parse_type = 5;
 
-        # MATTHEW E ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? (#{last_name_p})$/i )
+      # MATTHEW E ERICSON
+      elsif name.match( /^([#{@nc}]+) ([[:alpha:]])\.? (#{last_name_p})$/i )
         first  = $1;
         middle = $2;
         last   = $3;
         parsed = true
         parse_type = 6;
 
-        # MATTHEW E E ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ([A-Za-z])\.? (#{last_name_p})$/i )
+      # MATTHEW E E ERICSON
+      elsif name.match( /^([#{@nc}]+) ([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i )
         first  = $1;
         middle = $2 + ' ' + $3;
         last   = $4;
         parsed = true
         parse_type = 7;
 
-        # MATTHEW E.E. ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z]\.[A-Za-z]\.) (#{last_name_p})$/i )
+      # MATTHEW E.E. ERICSON
+      elsif name.match( /^([#{@nc}]+) ([[:alpha:]]\.[[:alpha:]]\.) (#{last_name_p})$/i )
         first  = $1;
         middle = $2;
         last   = $3;
         parsed = true
         parse_type = 8;
 
-        # MATTHEW ERICSON
+      # MATTHEW ERICSON
       elsif name.match( /^([#{@nc}]+) (#{last_name_p})$/i )
         first  = $1;
         middle = '';
@@ -419,7 +426,7 @@ module People
         parsed = true
         parse_type = 9;
 
-        # MATTHEW EDWARD ERICSON
+      # MATTHEW EDWARD ERICSON
       elsif name.match( /^([#{@nc}]+) ([#{@nc}]+) (#{last_name_p})$/i )
         first  = $1;
         middle = $2;
@@ -427,8 +434,8 @@ module People
         parsed = true
         parse_type = 10;
 
-        # MATTHEW E. SHEIE ERICSON
-      elsif name.match( /^([#{@nc}]+) ([A-Za-z])\.? ($multNamePat)$/i )
+      # MATTHEW E. SHEIE ERICSON
+      elsif name.match( /^([#{@nc}]+) ([[:alpha:]])\.? ($multNamePat)$/i )
         first  = $1;
         middle = $2;
         last   = $3;

@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{people}
-  s.version = "0.2.0"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Matthew Ericson"]
@@ -15,27 +15,18 @@ Gem::Specification.new do |s|
     "LICENSE",
      "README.rdoc"
   ]
-  s.files = [
-    ".document",
-     ".gitignore",
-     "LICENSE",
-     "README.rdoc",
-     "Rakefile",
-     "VERSION.yml",
-     "lib/people.rb",
-     "people.gemspec",
-     "test/people_test.rb",
-     "test/test_helper.rb"
-  ]
+  s.files         = `git ls-files`.split("\n")
+  s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.homepage = %q{http://github.com/mericson/people}
   s.rdoc_options = ["--charset=UTF-8"]
-  s.require_paths = ["lib"]
+  s.require_paths = %w{lib}
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Matts Name Parser}
-  s.test_files = [
-    "test/people_test.rb",
-     "test/test_helper.rb"
-  ]
+  s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+
+  s.add_development_dependency "pry"
+  s.add_development_dependency "rake"
+  s.add_development_dependency "rspec"
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
