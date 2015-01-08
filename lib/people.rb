@@ -3,20 +3,16 @@ module People
   # Class to parse names into their components like first, middle, last, etc.
   class NameParser
 
-    attr_reader :seen, :parsed
-
-    # Creates a name parsing object
-    def initialize( opts={} )
-
-      @name_chars = "[:alpha:]0-9\\-\\'"
-      @nc = @name_chars
+    def initialize(opts={})
+      @name_chars = "[:alpha:]0-9\\-\\'".freeze
+      @nc = @name_chars.freeze
 
       @opts = {
         :strip_mr   => true,
         :strip_mrs  => false,
         :case_mode  => 'proper',
         :couples    => false
-      }.merge! opts
+      }.merge!(opts).freeze
 
       ## constants
 
@@ -101,10 +97,10 @@ module People
                   # Other
                   'Prof(\.|essor)? ',
                   'Ald(\.|erman)? '
-                ];
+                ].map { |title| Regexp.new( "^(#{title})(.+)", true ) }.freeze
 
 
-      @suffixes = [
+      suffixes = [
                    'Jn?r\.?,? Esq\.?',
                    'Sn?r\.?,? Esq\.?',
                    'I{1,3},? Esq\.?',
@@ -133,20 +129,28 @@ module People
                    'I{1,3}\.?',             # 1st, 2nd, 3rd
                    'M\.?D\.?',           # M.D.
                    'D.?M\.?D\.?'         # M.D.
-                  ];
+                  ]
+      @suffixes_commaized = suffixes.map { |sfx| Regexp.new( "(.+), (#{sfx})$", true ) }.freeze
+      @suffixes_nocomma = suffixes.map { |sfx| Regexp.new( "(.+) (#{sfx})$", true ) }.freeze
 
-      @last_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc}]+)))";
-      @mult_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc} ]+)))";
+      last_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc}]+)))".freeze
+      mult_name_p = "((;.+)|(((Mc|Mac|Des|Dell[ae]|Del|De La|De Los|Da|Di|Du|La|Le|Lo|St\.|Den|Von|Van|Von Der|Van De[nr]) )?([#{@nc} ]+)))".freeze
 
-      @seen = 0
-      @parsed = 0;
-
+      @m_ericson = { false => /^([[:alpha:]])\.? (#{last_name_p})$/i, true => /^([[:alpha:]])\.? ()$/i }.freeze
+      @m_e_ericson = { false => /^([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i, true => /^([[:alpha:]])\.? ([[:alpha:]])\.? ()$/i }.freeze
+      @me_ericson = { false => /^([[:alpha:]])\.([[:alpha:]])\. (#{last_name_p})$/i, true => /^([[:alpha:]])\.([[:alpha:]])\. ()$/i }.freeze
+      @m_e_e_ericson = { false => /^([[:alpha:]])\.? ([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i, true => /^([[:alpha:]])\.? ([[:alpha:]])\.? ([[:alpha:]])\.? ()$/i }.freeze
+      @mee_ericson = { false => /^([[:alpha:]])\.([[:alpha:]])\.([[:alpha:]])\. (#{last_name_p})$/i, true => /^([[:alpha:]])\.([[:alpha:]])\.([[:alpha:]])\. ()$/i }.freeze
+      @m_edward_ericson = { false => /^([[:alpha:]])\.? ([#{@nc}]+) (#{last_name_p})$/i, true => /^([[:alpha:]])\.? ([#{@nc}]+) ()$/i }.freeze
+      @matthew_e_ericson = { false => /^([#{@nc}]+) ([[:alpha:]])\.? (#{last_name_p})$/i, true => /^([#{@nc}]+) ([[:alpha:]])\.? ()$/i }.freeze
+      @matthew_e_e_ericson = { false => /^([#{@nc}]+) ([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i, true => /^([#{@nc}]+) ([[:alpha:]])\.? ([[:alpha:]])\.? ()$/i }.freeze
+      @matthew_ee_ericson = { false => /^([#{@nc}]+) ([[:alpha:]]\.[[:alpha:]]\.) (#{last_name_p})$/i, true => /^([#{@nc}]+) ([[:alpha:]]\.[[:alpha:]]\.) ()$/i }.freeze
+      @matthew_ericson = { false => /^([#{@nc}]+) (#{last_name_p})$/i, true => /^([#{@nc}]+) ()$/i }.freeze
+      @matthew_edward_ericson = { false => /^([#{@nc}]+) ([#{@nc}]+) (#{last_name_p})$/i, true => /^([#{@nc}]+) ([#{@nc}]+) ()$/i }.freeze
+      @matthew_e_sheie_ericson = { false => /^([#{@nc}]+) ([[:alpha:]])\.? (#{mult_name_p})$/i, true => /^([#{@nc}]+) ([[:alpha:]])\.? (#{mult_name_p})$/i }.freeze
     end
 
     def parse( name )
-
-      @seen += 1
-
       clean  = ''
       out = Hash.new( "" )
 
@@ -157,9 +161,7 @@ module People
       name = clean( name )
 
       # strip trailing suffices
-      @suffixes.each do |sfx|
-        sfx_p = Regexp.new( "(.+), (#{sfx})$", true )
-        ##puts sfx_p
+      @suffixes_commaized.each do |sfx_p|
         name.gsub!( sfx_p, "\\1 \\2" )
       end
 
@@ -239,25 +241,13 @@ module People
           next if part == :suffix && out[part].match( /^[iv]+$/i );
           out[part] = proper( out[part] )
         end
-
       elsif @opts[:case_mode] == 'upper'
         [ :title, :first, :middle, :last, :suffix, :clean, :first2, :middle2, :title2, :suffix2 ].each do |part|
           out[part].upcase!
         end
-
-      else
-
-      end
-
-      if out[:parsed]
-        @parsed += 1
       end
 
       out[:clean] = name
-
-
-
-
 
       return {
         :title       => "",
@@ -301,10 +291,8 @@ module People
 
     def get_title( name )
 
-      @titles.each do |title|
-        title_p = Regexp.new( "^(#{title})(.+)", true )
+      @titles.each do |title_p|
         if m = name.match( title_p )
-
           title = m[1]
           name.replace( m[-1].strip )
           return title
@@ -317,8 +305,7 @@ module People
 
     def get_suffix( name )
 
-      @suffixes.each do |sfx|
-        sfx_p = Regexp.new( "(.+) (#{sfx})$", true )
+      @suffixes_nocomma.each do |sfx_p|
         if name.match( sfx_p )
           name.replace $1.strip
           suffix = $2
@@ -336,26 +323,16 @@ module People
       middle = ""
       last   = ""
 
-      if no_last_name
-        last_name_p = ''
-        mult_name_p = ''
-      else
-        last_name_p = @last_name_p
-        mult_name_p = @mult_name_p
-      end
-
       parsed = false
 
-      # M ERICSON
-      if name.match( /^([[:alpha:]])\.? (#{last_name_p})$/i )
+      if name.match( @m_ericson[no_last_name] )
         first  = $1;
         middle = '';
         last   = $2;
         parsed = true
         parse_type = 1;
 
-      # M E ERICSON
-      elsif name.match( /^([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i )
+      elsif name.match( @m_e_ericson[no_last_name] )
         first  = $1;
         middle = $2;
         last   = $3;
@@ -363,7 +340,7 @@ module People
         parse_type = 2;
 
       # M.E. ERICSON
-      elsif name.match( /^([[:alpha:]])\.([[:alpha:]])\. (#{last_name_p})$/i )
+      elsif name.match( @me_ericson[no_last_name] )
         first  = $1;
         middle = $2;
         last   = $3;
@@ -371,7 +348,7 @@ module People
         parse_type = 3;
 
       # M E E ERICSON
-      elsif name.match( /^([[:alpha:]])\.? ([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i )
+      elsif name.match( @m_e_e_ericson[no_last_name] )
         first  = $1;
         middle = $2 + ' ' + $3;
         last   = $4;
@@ -379,7 +356,7 @@ module People
         parse_type = 4;
 
       # M.E.E. ERICSON
-      elsif name.match( /^([[:alpha:]])\.([[:alpha:]])\.([[:alpha:]])\. (#{last_name_p})$/i )
+      elsif name.match( @mee_ericson[no_last_name] )
         first  = $1;
         middle = $2 + ' ' + $3;
         last   = $4;
@@ -387,7 +364,7 @@ module People
         parse_type = 4;
 
       # M EDWARD ERICSON
-      elsif name.match( /^([[:alpha:]])\.? ([#{@nc}]+) (#{last_name_p})$/i )
+      elsif name.match( @m_edward_ericson[no_last_name] )
         first  = $1;
         middle = $2;
         last   = $3;
@@ -395,7 +372,7 @@ module People
         parse_type = 5;
 
       # MATTHEW E ERICSON
-      elsif name.match( /^([#{@nc}]+) ([[:alpha:]])\.? (#{last_name_p})$/i )
+      elsif name.match( @matthew_e_ericson[no_last_name] )
         first  = $1;
         middle = $2;
         last   = $3;
@@ -403,7 +380,7 @@ module People
         parse_type = 6;
 
       # MATTHEW E E ERICSON
-      elsif name.match( /^([#{@nc}]+) ([[:alpha:]])\.? ([[:alpha:]])\.? (#{last_name_p})$/i )
+      elsif name.match( @matthew_e_e_ericson[no_last_name] )
         first  = $1;
         middle = $2 + ' ' + $3;
         last   = $4;
@@ -411,7 +388,7 @@ module People
         parse_type = 7;
 
       # MATTHEW E.E. ERICSON
-      elsif name.match( /^([#{@nc}]+) ([[:alpha:]]\.[[:alpha:]]\.) (#{last_name_p})$/i )
+      elsif name.match( @matthew_ee_ericson[no_last_name] )
         first  = $1;
         middle = $2;
         last   = $3;
@@ -419,7 +396,7 @@ module People
         parse_type = 8;
 
       # MATTHEW ERICSON
-      elsif name.match( /^([#{@nc}]+) (#{last_name_p})$/i )
+      elsif name.match( @matthew_ericson[no_last_name] )
         first  = $1;
         middle = '';
         last   = $2;
@@ -427,7 +404,7 @@ module People
         parse_type = 9;
 
       # MATTHEW EDWARD ERICSON
-      elsif name.match( /^([#{@nc}]+) ([#{@nc}]+) (#{last_name_p})$/i )
+      elsif name.match( @matthew_edward_ericson[no_last_name] )
         first  = $1;
         middle = $2;
         last   = $3;
@@ -435,7 +412,7 @@ module People
         parse_type = 10;
 
       # MATTHEW E. SHEIE ERICSON
-      elsif name.match( /^([#{@nc}]+) ([[:alpha:]])\.? ($multNamePat)$/i )
+      elsif name.match( @matthew_e_sheie_ericson[no_last_name] )
         first  = $1;
         middle = $2;
         last   = $3;
@@ -449,10 +426,7 @@ module People
 
     end
 
-
-
     def proper ( name )
-
       fixed = name.downcase
 
       # Now uppercase first letter of every word. By checking on word boundaries,

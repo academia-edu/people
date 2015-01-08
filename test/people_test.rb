@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-require 'test_helper'
+require_relative './test_helper'
 
 # These specs are still pretty far from complete,
 # both with respect to different types of names,
