@@ -1,5 +1,7 @@
 module People
 
+  EMPTY = "".freeze
+
   # Class to parse names into their components like first, middle, last, etc.
   class NameParser
 
@@ -151,8 +153,7 @@ module People
     end
 
     def parse( name )
-      clean  = ''
-      out = Hash.new( "" )
+      out = Hash.new( EMPTY )
 
       out[:orig]  = name.dup
 
@@ -162,21 +163,21 @@ module People
 
       # strip trailing suffices
       @suffixes_commaized.each do |sfx_p|
-        name.gsub!( sfx_p, "\\1 \\2" )
+        name.gsub!( sfx_p, "\\1 \\2".freeze )
       end
 
-      name.gsub!( /Mr\.? \& Mrs\.?/i, "Mr. and Mrs." )
+      name.gsub!( /Mr\.? \& Mrs\.?/i, "Mr. and Mrs.".freeze )
 
       # Flip last and first if contain comma
-      name.gsub!( /;/, "" )
-      name.gsub!( /(.+),(.+)/, "\\2 ;\\1" )
+      name.gsub!( /;/, EMPTY )
+      name.gsub!( /(.+),(.+)/, "\\2 ;\\1".freeze )
 
 
-      name.gsub!( /,/, "" )
+      name.gsub!( /,/, EMPTY )
       name.strip!
 
       if @opts[:couples]
-        name.gsub!( / +and +/i, " \& " )
+        name.gsub!( / +and +/i, " \& ".freeze )
       end
 
 
@@ -204,7 +205,7 @@ module People
         out[:suffix] = get_suffix( a );
 
         a.strip!
-        a += " "
+        a += " ".freeze
 
         parts = get_name_parts( a, true )
 
@@ -216,7 +217,7 @@ module People
         if out[:parsed] && out[:parsed2]
           out[:multiple] = true
         else
-          out = Hash.new( "" )
+          out = Hash.new( EMPTY )
         end
 
 
@@ -236,38 +237,38 @@ module People
       end
 
 
-      if @opts[:case_mode] == 'proper'
+      if @opts[:case_mode] == 'proper'.freeze
         [ :title, :first, :middle, :last, :suffix, :clean, :first2, :middle2, :title2, :suffix2 ].each do |part|
           next if part == :suffix && out[part].match( /^[iv]+$/i );
           out[part] = proper( out[part] )
         end
-      elsif @opts[:case_mode] == 'upper'
+      elsif @opts[:case_mode] == 'upper'.freeze
         [ :title, :first, :middle, :last, :suffix, :clean, :first2, :middle2, :title2, :suffix2 ].each do |part|
-          out[part].upcase!
+          out[part].upcase! if out[part] != EMPTY
         end
       end
 
       out[:clean] = name
 
       return {
-        :title       => "",
-        :first       => "",
-        :middle      => "",
-        :last        => "",
-        :suffix      => "",
+        :title       => EMPTY,
+        :first       => EMPTY,
+        :middle      => EMPTY,
+        :last        => EMPTY,
+        :suffix      => EMPTY,
 
-        :title2      => "",
-        :first2      => "",
-        :middle2     => "",
-        :suffix2     => "",
+        :title2      => EMPTY,
+        :first2      => EMPTY,
+        :middle2     => EMPTY,
+        :suffix2     => EMPTY,
 
-        :clean       => "",
+        :clean       => EMPTY,
 
         :parsed      => false,
-        :parse_type  => "",
+        :parse_type  => EMPTY,
 
         :parsed2     => false,
-        :parse_type2 => "",
+        :parse_type2 => EMPTY,
 
         :multiple    => false
       }.merge( out )
@@ -278,9 +279,9 @@ module People
     def clean( s )
 
       # remove illegal characters
-      s.gsub!( /[^[:alpha:]0-9\-\'\.&\/ \,]/, "" )
+      s.gsub!( /[^[:alpha:]0-9\-\'\.&\/ \,]/, EMPTY )
       # remove repeating spaces
-      s.gsub!( /[[:space:]]+/, " " )
+      s.gsub!( /[[:space:]]+/, " ".freeze )
       s.strip!
       s
 
@@ -297,7 +298,7 @@ module People
 
       end
 
-      return ""
+      return EMPTY
     end
 
     def get_suffix( name )
@@ -311,20 +312,20 @@ module People
 
       end
 
-      return ""
+      return EMPTY
     end
 
     def get_name_parts( name, no_last_name = false )
 
-      first  = ""
-      middle = ""
-      last   = ""
+      first  = EMPTY
+      middle = EMPTY
+      last   = EMPTY
 
       parsed = false
 
       if name.match( @m_ericson[no_last_name] )
         first  = $1;
-        middle = '';
+        middle = EMPTY;
         last   = $2;
         parsed = true
         parse_type = 1;
@@ -347,7 +348,7 @@ module People
       # M E E ERICSON
       elsif name.match( @m_e_e_ericson[no_last_name] )
         first  = $1;
-        middle = $2 + ' ' + $3;
+        middle = $2 + ' '.freeze + $3;
         last   = $4;
         parsed = true
         parse_type = 4;
@@ -355,7 +356,7 @@ module People
       # M.E.E. ERICSON
       elsif name.match( @mee_ericson[no_last_name] )
         first  = $1;
-        middle = $2 + ' ' + $3;
+        middle = $2 + ' '.freeze + $3;
         last   = $4;
         parsed = true
         parse_type = 4;
@@ -379,7 +380,7 @@ module People
       # MATTHEW E E ERICSON
       elsif name.match( @matthew_e_e_ericson[no_last_name] )
         first  = $1;
-        middle = $2 + ' ' + $3;
+        middle = $2 + ' '.freeze + $3;
         last   = $4;
         parsed = true
         parse_type = 7;
@@ -395,7 +396,7 @@ module People
       # MATTHEW ERICSON
       elsif name.match( @matthew_ericson[no_last_name] )
         first  = $1;
-        middle = '';
+        middle = EMPTY;
         last   = $2;
         parsed = true
         parse_type = 9;
@@ -417,7 +418,7 @@ module People
         parse_type = 11;
       end
 
-      last.gsub!( /;/, "" )
+      last.gsub!( /;/, EMPTY )
 
       return [ parsed, parse_type, first, middle, last ];
 
@@ -441,20 +442,20 @@ module People
         end
 
         # Now correct for "Mac" exceptions
-        fixed.gsub!( /MacHin/i,  'Machin' )
-        fixed.gsub!( /MacHlin/i, 'Machlin' )
-        fixed.gsub!( /MacHar/i,  'Machar' )
-        fixed.gsub!( /MacKle/i,  'Mackle' )
-        fixed.gsub!( /MacKlin/i, 'Macklin' )
-        fixed.gsub!( /MacKie/i,  'Mackie' )
+        fixed.gsub!( /MacHin/i,  'Machin'.freeze )
+        fixed.gsub!( /MacHlin/i, 'Machlin'.freeze )
+        fixed.gsub!( /MacHar/i,  'Machar'.freeze )
+        fixed.gsub!( /MacKle/i,  'Mackle'.freeze )
+        fixed.gsub!( /MacKlin/i, 'Macklin'.freeze )
+        fixed.gsub!( /MacKie/i,  'Mackie'.freeze )
 
         # Portuguese
-        fixed.gsub!( /MacHado/i,  'Machado' );
+        fixed.gsub!( /MacHado/i,  'Machado'.freeze );
 
         # Lithuanian
-        fixed.gsub!( /MacEvicius/i, 'Macevicius' )
-        fixed.gsub!( /MacIulis/i,   'Maciulis' )
-        fixed.gsub!( /MacIas/i,     'Macias' )
+        fixed.gsub!( /MacEvicius/i, 'Macevicius'.freeze )
+        fixed.gsub!( /MacIulis/i,   'Maciulis'.freeze )
+        fixed.gsub!( /MacIas/i,     'Macias'.freeze )
 
       elsif fixed.match( /\bMc/i )
         fixed.gsub!( /\b(Mc)([a-z]+)/i ) do |m|
@@ -464,7 +465,7 @@ module People
       end
 
       # Exceptions (only 'Mac' name ending in 'o' ?)
-      fixed.gsub!( /Macmurdo/i, 'MacMurdo' )
+      fixed.gsub!( /Macmurdo/i, 'MacMurdo'.freeze )
 
       return fixed
 
