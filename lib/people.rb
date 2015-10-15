@@ -425,6 +425,8 @@ module People
     end
 
     def proper ( name )
+      return EMPTY if name == EMPTY
+
       fixed = name.downcase
 
       # Now uppercase first letter of every word. By checking on word boundaries,
