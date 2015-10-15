@@ -1,0 +1,15 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+NameParser	lib/people.rb	/^  class NameParser$/;"	c	class:People
+People	lib/people.rb	/^module People$/;"	m
+clean	lib/people.rb	/^    def clean( s )$/;"	f	class:People.NameParser
+get_name_parts	lib/people.rb	/^    def get_name_parts( name, no_last_name = false )$/;"	f	class:People.NameParser
+get_suffix	lib/people.rb	/^    def get_suffix( name )$/;"	f	class:People.NameParser
+get_title	lib/people.rb	/^    def get_title( name )$/;"	f	class:People.NameParser
+initialize	lib/people.rb	/^    def initialize(opts={})$/;"	f	class:People.NameParser
+parse	lib/people.rb	/^    def parse( name )$/;"	f	class:People.NameParser
+proper	lib/people.rb	/^    def proper ( name )$/;"	f	class:People.NameParser

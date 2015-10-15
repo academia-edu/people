@@ -418,7 +418,7 @@ module People
         parse_type = 11;
       end
 
-      last.gsub!( /;/, EMPTY )
+      last.gsub!( /;/, EMPTY ) unless last == EMPTY
 
       return [ parsed, parse_type, first, middle, last ];
 
