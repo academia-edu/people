@@ -317,6 +317,8 @@ module People
 
     def get_name_parts( name, no_last_name = false )
 
+      return [false, nil, EMPTY, EMPTY, EMPTY] if max_char_repetitions(name) > 5
+
       first  = EMPTY
       middle = EMPTY
       last   = EMPTY
@@ -471,6 +473,24 @@ module People
 
       return fixed
 
+    end
+
+    def max_char_repetitions(s)
+      max_repeats = 0
+      repeats = 0
+      prev = nil
+
+      s.chars.each do |c|
+        if c == prev
+          repeats += 1
+          max_repeats = repeats if repeats > max_repeats
+        else
+          prev = c
+          repeats = 1
+        end
+      end
+
+      max_repeats
     end
 
   end

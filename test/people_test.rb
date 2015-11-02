@@ -92,4 +92,9 @@ describe People::NameParser do
     it_should_behave_like "a parseable name", name, "Smythe", "A", "Andrew"
   end
 
+  it 'should handle pathological input' do
+    name = 'ffffffffffffffffaba ffffffffffffffffb3 ffffffffffffffffc7 ffffffffffffffffb9 fffffffffffffffff9'
+    People::NameParser.new.parse(name)[:parsed].should be false
+  end
+
 end
